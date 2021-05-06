@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 
 const activitiesRouter = require('./routes/activities');
 const usersRouter = require('./routes/users');
+const router = require('./routes/users');
+const User = require('./models/user.model');
 
 require('dotenv').config();
 

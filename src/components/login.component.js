@@ -1,32 +1,41 @@
 import React, { Component } from 'react';
 import axios from "axios";
+import { Redirect } from 'react-router';
 
 export default class Login extends Component {
-    state = {
-        email: '',
-        password: ''
+    constructor(props) {
+        super(props);
+        this.state = {
+            email: '',
+            password: '',
+            redirect: false,
+            user: {}
+        }
     }
-
     changeHandler = event => {
         this.setState({ [event.target.name]: event.target.value });
     }
 
     submitHandler = event => {
         event.preventDefault();
-        console.log(this.state.email);
         let user = {
             "username": this.state.email,
             "password": this.state.password
         }
         axios.post('http://localhost:8080/users/login', { user })
             .then(res => {
-                console.log(res);
-                console.log(res.data);
-                window.location = "/retrieve";
+                this.setState({ user: res.data });
+                localStorage.setItem("user", JSON.stringify(res.data));
+                this.props.handleLogin(res);
+                this.setState({ redirect: true });
             })
             .catch(error => console.log("this is the error: ", error))
     }
     render() {
+        if (this.state.redirect) {
+            let user = this.state.user;
+            return <Redirect to={{ pathname: '/dashboard', data: { user } }} />
+        }
         return(
             <div className="columns is-centered">
                 <div className="column is-two-fifths">

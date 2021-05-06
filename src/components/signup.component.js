@@ -2,11 +2,18 @@ import React, { Component } from 'react';
 import axios from "axios";
 
 export default class Signup extends Component {
-    state = {
-        email: '',
-        password: '',
-        passwordConfirm: '',
-        passwordWarn: 0
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            email: '',
+            password: '',
+            passwordConfirm: '',
+            passwordWarn: 0
+        }
+
+        this.changeHandler = this.changeHandler.bind(this);
+        this.submitHandler = this.submitHandler.bind(this);
     }
 
     changeHandler = event => {
@@ -15,8 +22,6 @@ export default class Signup extends Component {
 
     submitHandler = event => {
         event.preventDefault();
-        console.log(this.state.email);
-        console.log(this.state.password);
         let user = {}
         if (this.state.passwordConfirm === this.state.password) {
             this.setState({ passwordWarn: 0 });
@@ -27,9 +32,8 @@ export default class Signup extends Component {
             }
             axios.post('http://localhost:8080/users/signup', { user })
             .then(res => {
-                console.log(res);
-                console.log(res.data);
-                window.location = "/retrieve";
+                this.props.handleLogin(res);
+                this.props.history.push('/');
             })
             .catch(error => console.log("this is the error: ", error))
         }

@@ -1,5 +1,6 @@
 const router = require('express').Router();
 let Activity = require('../models/activity.model');
+const auth = require('../auth');
 
 router.route('/').get((req, res) => {
     Activity.find()
@@ -7,7 +8,7 @@ router.route('/').get((req, res) => {
         .catch(error => res.status(400).json('Error: ' + error));
 });
 
-router.route('/addactivity').post((req, res) => {
+router.route('/addactivity').all(auth).post((req, res) => {
     const username = req.body.username;
     const description = req.body.description;
     const duration = Number(req.body.duration);
@@ -25,20 +26,27 @@ router.route('/addactivity').post((req, res) => {
         .catch(error => res.status(400).json('Eror: ' + error));
 });
 
-router.route('/:id').get((req, res) => {
-    Activity.findById(req.params.id)
+router.route('/list').all(auth).get((req, res) => {
+    console.log(req);
+    Activity.find({"username" : req.body.username})
+        .then(activity => res.json(activity))
+        .catch(error => res.status(400).json('Error: ' + error));
+})
+
+router.route('/getSingle').all(auth).get((req, res) => {
+    Activity.findById(req.body.id)
         .then(activity => res.json(activity))
         .catch(error => res.status(400).json('Error: ' + error));
 });
 
-router.route('/:id').delete((req, res) => {
-    Activity.findByIdAndDelete(req.params.id)
+router.route('/delete').all(auth).delete((req, res) => {
+    Activity.findByIdAndDelete(req.body.id)
         .then(() => res.json('Activity deleted.'))
         .catch(error => res.status(400).json('Error: ' + error));
 });
 
-router.route('/update/:id').post((req, res) => {
-    Activity.findById(req.params.id)
+router.route('/update').all(auth).post((req, res) => {
+    Activity.findById(req.body.id)
         .then(activity => {
             activity.username = req.body.username;
             activity.description = req.body.description;
