@@ -95,7 +95,6 @@ router.route('/login').post((req, res) => {
 })
 
 router.route('/useractivities').all(auth).get((req, res) => {
-    console.log(req.user);
     UserActivities.findOne({"username" : req.user.username})
         .then(userActivity => res.json(userActivity.activities))
         .catch(error => res.status(400).json('Error: ' + error));
@@ -119,6 +118,30 @@ router.route('/useractivities').post((req, res) => {
             .catch(error => res.status(400).json('Error: Could not add activity to list of activities' + error));
         })
         .catch(error => res.status(400).json('Error: ' + error));
+})
+
+router.route('/useractivities').all(auth).patch((req, res) => {
+    const username = req.user.username;
+    const activity = req.body.params.activity;
+    console.log(username);
+    console.log("entering patch");
+    console.log(activity);
+    UserActivities.updateOne(
+        { "username": username }, 
+        { $push: {"activities": activity}}
+    )
+    .then(res.json({ msg: "User activity added!" }))
+    .catch(error => res.status(400).json('Error: Could not add activity to list of activities' + error));
+})
+
+router.route('/useractivitiesdel').delete((req, res) => {
+    const username = req.body.username;
+    UserActivities.updateOne(
+        { "username": username },
+        { $pop: {"activities": -1 }}
+    )
+    .then(res.json({ msg: "last activity removed"}))
+    .catch(error => res.status(400).json('Error: could not remove last activity'));
 })
 
 router.route('/user').all(auth).get((req, res) => {
