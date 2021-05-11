@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import axios from "axios";
 import ActivityCard from './activitycard.component'
+import ActivityButton from './activitybutton.component'
+import ActivitiesList from './activitieslist.component'
 import './styles/dashboard.css'
 
 export default class Dashboard extends Component {
@@ -9,7 +11,8 @@ export default class Dashboard extends Component {
         this.state = {
             user: {},
             userActivities: [],
-            activityToAdd: {}
+            activityToAdd: {},
+            isLoading: false
         }
 
         this.getUserActivities = this.getUserActivities.bind(this);
@@ -25,7 +28,9 @@ export default class Dashboard extends Component {
         })
         .then(res => {
             const activities = res.data;
+            console.log("Setting state in getUserActivities");
             this.setState({ userActivities: activities });
+            console.log(activities);
         })
         .catch(e => {
             console.log("No activities");
@@ -35,6 +40,7 @@ export default class Dashboard extends Component {
     addUserActivities(activity) {
         const user = JSON.parse(localStorage.getItem('user'));
         console.log(activity);
+        this.setState({ isLoading: true });
         if ((this.state.userActivities).length === 0) {
             axios.post('http://localhost:8080/users/useractivities', {
                 params: {
@@ -43,11 +49,18 @@ export default class Dashboard extends Component {
                 }
             })
             .then(res => {
-                const activities = res.data;
-                this.setState({ userActivities: activities }, () => {
-                    console.log(this.state.userActivities);
-                });
-                console.log(this.state.userActivities);
+                const activities = activity;
+                console.log("Setting state in addUserActivities 1");
+                this.setState(prevState => {
+                    return {
+                        userActivities: [...prevState.userActivities, activities],
+                        isLoading: false,
+                    }
+                })
+                // this.setState({ userActivities: activities }, () => {
+                //     console.log(this.state.userActivities);
+                // });
+                // console.log(this.state.userActivities);
             })
             .catch(res => {
                 console.log("No activities");
@@ -61,11 +74,21 @@ export default class Dashboard extends Component {
                 }
             })
             .then(res => {
-                const activities = res.data;
+                const activities = activity;
+                console.log(activities);
                 const joined = this.state.userActivities.concat(activities);
-                this.setState({ userActivities: joined }, () => {
-                    console.log(this.state.userActivities);
+                console.log("Joined: ", joined);
+                console.log("Setting state in addUserActivities 2");
+                this.setState(prevState => {
+                    return {
+                        userActivities: joined,
+                        isLoading: false,
+                    }
                 });
+                console.log("userActivities state in addUserActivities 2: ", this.state.userActivities);
+                // this.setState({ userActivities: joined }, () => {
+                //     console.log(this.state.userActivities);
+                // });
             })
             .catch(e => {
                 console.log(e);
@@ -79,7 +102,6 @@ export default class Dashboard extends Component {
             totalTime: 0
         };
         this.setState({ activityToAdd: {description: event.target.value, totalTime: 0} });
-        this.getUserActivities();
     }
 
     submitHandler = event => {
@@ -105,7 +127,9 @@ export default class Dashboard extends Component {
     }
 
     render() {
-        const activities = this.state.userActivities;
+        // const activities = this.state.userActivities;
+        const { userActivities, isLoading } = this.state;
+        console.log(userActivities);
         return(
             <div className="columns is-mobile">
                 <div className="column is-three-quarters">
@@ -128,13 +152,15 @@ export default class Dashboard extends Component {
                             <div className="box">
                                 <h2 className="subtitle">Your Activity List</h2>
                                 <div id="button-list">
-                                    {
+                                    <ActivitiesList activities={userActivities} isLoading={isLoading}/>
+                                    {/* {
                                         activities.map((object, index) => {
                                             return(
-                                                <button className="button" key={`${object.description}`}>{object.description}</button>
+                                                // <ActivityButton description={object.description} />
+                                                // <button className="button" key={`${object.description}`}>{object.description}</button>
                                             )
                                         })
-                                    }  
+                                    }   */}
                                 </div>
                             </div>
                             <div className="box">
