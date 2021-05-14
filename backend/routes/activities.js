@@ -9,15 +9,17 @@ router.route('/').get((req, res) => {
 });
 
 router.route('/addactivity').all(auth).post((req, res) => {
-    const username = req.body.username;
-    const description = req.body.description;
-    const duration = Number(req.body.duration);
-    const date = Date.parse(req.body.date);
+    const username = req.user.username;
+    const description = req.body.params.description;
+    const duration = Number(req.body.params.duration);
+    const goalTime = Number(req.body.params.goalTime);
+    const date = Date.parse(req.body.params.date);
 
     const newActivity = new Activity({
         username,
         description,
         duration,
+        goalTime,
         date,
     });
 
@@ -27,9 +29,13 @@ router.route('/addactivity').all(auth).post((req, res) => {
 });
 
 router.route('/list').all(auth).get((req, res) => {
-    console.log(req);
-    Activity.find({"username" : req.body.username})
-        .then(activity => res.json(activity))
+    let today = new Date();
+    today.setUTCHours(0,0,0,0);
+    Activity.find({"username" : req.user.username, "date" : today})
+        .then(activity => {
+            res.json(activity);
+            console.log(activity);
+        })
         .catch(error => res.status(400).json('Error: ' + error));
 })
 
@@ -51,6 +57,7 @@ router.route('/update').all(auth).post((req, res) => {
             activity.username = req.body.username;
             activity.description = req.body.description;
             activity.duration = Number(req.body.duration);
+            activity.goalTime = Number(req.body.goalTime);
             activity.date = Date(req.body.date);
 
             activity.save()

@@ -5,16 +5,26 @@ export default class Navbar extends Component {
     constructor(props) {
         super(props);
 
+        this.state = {
+            loggedInStatus: this.props.loggedInStatus
+        }
+
         this.logout = this.logout.bind(this);
     }
 
     logout() {
         console.log("logout clicked");
+        this.setState({ loggedInStatus: "NOT_LOGGED_IN"});
         localStorage.removeItem('user');
+    }
+
+    componentDidMount() {
+        this.setState({ loggedInStatus: this.props.loggedInStatus })
+        console.log(this.state.loggedInStatus);
     }
     
     render() {
-        if (this.props.loggedInStatus === "NOT_LOGGED_IN") {
+        if (this.state.loggedInStatus === "NOT_LOGGED_IN") {
             return (
                 <nav className="navbar is-primary">
                     <div className="navbar-brand">

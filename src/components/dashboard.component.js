@@ -11,12 +11,28 @@ export default class Dashboard extends Component {
         this.state = {
             user: {},
             userActivities: [],
+            todaysActivities: [],
             activityToAdd: {},
             isLoading: false
         }
 
+        this.getTodaysActivities = this.getTodaysActivities.bind(this);
         this.getUserActivities = this.getUserActivities.bind(this);
         this.addUserActivities = this.addUserActivities.bind(this);
+    }
+
+    getTodaysActivities() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        axios.get('http://localhost:8080/activities/list', {
+            params: {
+                token: user.jwtToken
+            }
+        })
+        .then(res => {
+            this.setState({ todaysActivities: res.data });
+            console.log(this.state.todaysActivities);
+        })
+        .catch(error => {console.log(error);})
     }
 
     getUserActivities() {
@@ -28,9 +44,7 @@ export default class Dashboard extends Component {
         })
         .then(res => {
             const activities = res.data;
-            console.log("Setting state in getUserActivities");
             this.setState({ userActivities: activities });
-            console.log(activities);
         })
         .catch(e => {
             console.log("No activities");
@@ -39,7 +53,6 @@ export default class Dashboard extends Component {
 
     addUserActivities(activity) {
         const user = JSON.parse(localStorage.getItem('user'));
-        console.log(activity);
         this.setState({ isLoading: true });
         if ((this.state.userActivities).length === 0) {
             axios.post('http://localhost:8080/users/useractivities', {
@@ -50,17 +63,12 @@ export default class Dashboard extends Component {
             })
             .then(res => {
                 const activities = activity;
-                console.log("Setting state in addUserActivities 1");
                 this.setState(prevState => {
                     return {
                         userActivities: [...prevState.userActivities, activities],
                         isLoading: false,
                     }
                 })
-                // this.setState({ userActivities: activities }, () => {
-                //     console.log(this.state.userActivities);
-                // });
-                // console.log(this.state.userActivities);
             })
             .catch(res => {
                 console.log("No activities");
@@ -75,20 +83,13 @@ export default class Dashboard extends Component {
             })
             .then(res => {
                 const activities = activity;
-                console.log(activities);
                 const joined = this.state.userActivities.concat(activities);
-                console.log("Joined: ", joined);
-                console.log("Setting state in addUserActivities 2");
                 this.setState(prevState => {
                     return {
                         userActivities: joined,
                         isLoading: false,
                     }
                 });
-                console.log("userActivities state in addUserActivities 2: ", this.state.userActivities);
-                // this.setState({ userActivities: joined }, () => {
-                //     console.log(this.state.userActivities);
-                // });
             })
             .catch(e => {
                 console.log(e);
@@ -106,7 +107,6 @@ export default class Dashboard extends Component {
 
     submitHandler = event => {
         event.preventDefault();
-        console.log(this.state.activityToAdd);
         this.addUserActivities(this.state.activityToAdd);
     }
 
@@ -124,12 +124,11 @@ export default class Dashboard extends Component {
             console.log(e);
         });
         this.getUserActivities();
+        this.getTodaysActivities();
     }
 
     render() {
-        // const activities = this.state.userActivities;
-        const { userActivities, isLoading } = this.state;
-        console.log(userActivities);
+        const { todaysActivities, userActivities, isLoading } = this.state;
         return(
             <div className="columns is-mobile">
                 <div className="column is-three-quarters">
@@ -138,7 +137,11 @@ export default class Dashboard extends Component {
                             Tracker for CURRENT_DATE
                         </h1>
                         <div className="card-conent">
-                            <ActivityCard name={"Activity Test 1"} goalTime={2} currentTime={0}/>
+                            {todaysActivities.map((object, index) => 
+                                (
+                                    <ActivityCard name={object.description} goalTime={object.goalTime} currentTime={object.duration}/>
+                                )
+                            )}
                         </div>
                     </div>
                 </div>
@@ -148,19 +151,11 @@ export default class Dashboard extends Component {
                             Menu
                         </header>
                         <div className="card-content">
-                            <button className="button is-light" onClick={this.getUserActivities}>Get Activities</button>
+                            <button className="button is-light" onClick={this.getTodaysActivities}>Get Activities</button>
                             <div className="box">
                                 <h2 className="subtitle">Your Activity List</h2>
                                 <div id="button-list">
-                                    <ActivitiesList activities={userActivities} isLoading={isLoading}/>
-                                    {/* {
-                                        activities.map((object, index) => {
-                                            return(
-                                                // <ActivityButton description={object.description} />
-                                                // <button className="button" key={`${object.description}`}>{object.description}</button>
-                                            )
-                                        })
-                                    }   */}
+                                    <ActivitiesList activities={userActivities} isLoading={isLoading} getNewActivity={this.getTodaysActivities}/>
                                 </div>
                             </div>
                             <div className="box">

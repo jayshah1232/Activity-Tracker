@@ -22,8 +22,6 @@ export default class App extends Component {
     }
   }
 
-  debugger;
-
   checkLoginStatus() {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user && this.state.loggedInStatus === "NOT_LOGGED_IN") {
@@ -52,6 +50,7 @@ export default class App extends Component {
   
   componentDidMount() {
     this.checkLoginStatus();
+    console.log(this.state.loggedInStatus);
   }
   
   render() {

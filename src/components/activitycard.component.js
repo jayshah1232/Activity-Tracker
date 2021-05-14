@@ -7,7 +7,8 @@ export default class ActivityCard extends Component {
         this.state = {
             activityName: '',
             goalTime: '',
-            currentTime: ''
+            currentTime: '',
+            percentage: 0,
         }
     }
 
@@ -15,11 +16,13 @@ export default class ActivityCard extends Component {
         this.setState({
             activityName: this.props.name,
             goalTime: this.props.goalTime,
-            currentTime: this.props.currentTime
-        })
+            currentTime: this.props.currentTime,
+            percentage: (this.props.currentTime/this.props.goalTime)*100
+        });
     }
 
     render() {
+        console.log(this.state.percentage);
         return(
             <div className="card" id="activitycard">
                 <header className="card-header">
@@ -29,7 +32,7 @@ export default class ActivityCard extends Component {
                     <p className="title is-4">Goal: {this.state.goalTime}</p>
                     <div className="content">
                         <p>{this.state.currentTime} hrs / {this.state.goalTime} hrs</p>
-                        <progress className="progress" value="15" max="100">15%</progress>
+                        <progress className="progress" value={this.state.percentage} max="100">15%</progress>
                     </div>
                 </div>
             </div>

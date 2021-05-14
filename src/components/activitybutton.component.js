@@ -14,7 +14,10 @@ export default class ActivityButton extends Component {
 
     render() {
         return(
-            <button className="button is-primary">{this.props.description}</button>
+            <div>
+                <button className="button is-primary">{this.props.description}</button>
+                <button className="delete" aria-label="close" onClick={this.addActivity}></button>
+            </div>
         )
     }
 }
